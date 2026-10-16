@@ -40,14 +40,16 @@ The files of this repository (the formula, its template, the workflow and the sc
 A workflow, `.github/workflows/bump.yml`, runs every six hours and can also be started by hand. It reads the manifest
 of Jason's latest release from `https://jasonharness.ai`.
 
-It does nothing for a release before 0.9.0, or for the version the formula already has. For a new release, it:
+It does nothing for a release before 0.9.0, or when `Formula/jason.rb` already is the template rendered for the
+latest release. Otherwise (a new release, or a template corrected since) it:
 
 1. downloads each archive the formula installs, checks its SHA-256 and size against the manifest, and stops without
    changing anything if either differs;
 2. renders `Formula/jason.rb` from `.github/formula/jason.rb.template`;
 3. commits it as `jason <version>`;
 4. trusts that one formula (Homebrew 6 asks for it), then runs `brew style`, `brew audit`, `brew install` and
-   `brew test` on it, and prints what is trusted and what `brew info jason` says;
+   `brew test` on it, prints what is trusted and what `brew info jason` says, and checks that `jason` resolves to
+   `reply-team/tap/jason` and that the version Homebrew holds for it is the release's;
 5. pushes that commit only when every one of those steps passes.
 
 Every request follows at most three redirects. A longer chain stops the run, because it means something changed that

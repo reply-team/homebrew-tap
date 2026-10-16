@@ -66,12 +66,25 @@ jobs:
         if: steps.bump.outputs.changed == 'true'
         run: brew test reply-team/tap/jason
 
-      # For the record: what is trusted now, and that the short name a person upgrades by resolves.
-      - name: What is trusted, and the short name
+      # The last check: the short name a person upgrades by must resolve to this tap's formula, and Homebrew must
+      # hold the release's version for it (from the archive's name alone it would read 64). Both are printed, and
+      # either mismatch fails the job, so nothing is pushed.
+      - name: Check the short name and the version
         if: steps.bump.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
         run: |
           brew trust
           brew info jason
+          brew info --json=v2 jason | python3 -c '
+          import json, os, sys
+          formula = json.load(sys.stdin)["formulae"][0]
+          name, stable = formula["full_name"], formula["versions"]["stable"]
+          print("full_name: %s" % name)
+          print("versions.stable: %s" % stable)
+          if name != "reply-team/tap/jason" or stable != os.environ["VERSION"]:
+              sys.exit("FAIL: the short name must be reply-team/tap/jason at %s" % os.environ["VERSION"])
+          '
 
       - name: Push the commit
         if: steps.bump.outputs.changed == 'true'

@@ -10,8 +10,10 @@
           the checks are tried without a network.
 
 Every request follows at most three redirects, and prints how many it followed. Nothing is written unless every check
-passes. A release before 0.9.0, or the version the formula already has, is not a change: the script says so and exits
-0. Anything wrong exits 1 and says what. Under GitHub Actions it also writes `changed` and `version` to $GITHUB_OUTPUT.
+passes. A release before 0.9.0, or a formula that already is the template rendered for the release, is not a change: the
+script says so and exits 0. A formula at the same version but with other text (the template corrected since) is rendered
+again. Anything wrong exits 1 and says what. Under GitHub Actions it also writes `changed` and `version` to
+$GITHUB_OUTPUT.
 Standard library only.
 """
 import argparse
@@ -74,15 +76,19 @@ def parse_version(text):
 
 
 def current_version(formula_path):
-    """The version the formula has now, read from the /v<version>/ of its urls, or None when there is no formula yet.
-    The formula has no `version` line (the template says why), so its urls are where the version is written."""
+    """The version the formula states, or None when there is no formula yet or it states none. Its urls are the
+    cross-check: they must all name one version, and the stated one where there is one."""
     if not formula_path or not os.path.isfile(formula_path):
         return None
+    text = read_text(formula_path)
+    stated = re.search(r'^\s*version "(\d+\.\d+\.\d+)"\s*$', text, re.M)
     urls = r'^\s*url "https://jasonharness\.ai/releases/download/v(\d+\.\d+\.\d+)/'
-    found = set(re.findall(urls, read_text(formula_path), re.M))
+    found = set(re.findall(urls, text, re.M))
     if len(found) > 1:
         raise Refused("the formula's urls name more than one version (%s)" % ", ".join(sorted(found)))
-    return parse_version(found.pop()) if found else None
+    if stated and found and found != {stated.group(1)}:
+        raise Refused("the formula states %s and its urls name %s" % (stated.group(1), found.pop()))
+    return parse_version(stated.group(1)) if stated else None
 
 
 def check_manifest(raw):
@@ -115,12 +121,15 @@ def check_manifest(raw):
     return version, artifacts
 
 
-def nothing_to_do(version, formula_path):
-    """The reason there is nothing to do, or None when the formula should move to this version."""
+def nothing_to_do(version, text, formula_path):
+    """The reason there is nothing to do, or None when the formula should become `text`, the template rendered for
+    this release. The version alone does not decide it: a formula the template has corrected since is rendered again."""
     if version < FLOOR:
         return "%s is before %s, the first release this tap carries: nothing to do" % (fmt(version), fmt(FLOOR))
-    if current_version(formula_path) == version:
-        return "the formula already has %s: nothing to do" % fmt(version)
+    current = current_version(formula_path)
+    print("the formula there now states %s" % (fmt(current) if current else "no version"))
+    if formula_path and os.path.isfile(formula_path) and read_text(formula_path) == text:
+        return "the formula already is the template rendered for %s: nothing to do" % fmt(version)
     return None
 
 
@@ -185,14 +194,15 @@ def get(url, transport=None):
 def bump(formula_path, template_path, transport=None):
     """The release's manifest and archives from the product address; the formula rendered if anything changed."""
     version, artifacts = check_manifest(get(PRODUCT + "/latest/download/manifest.json", transport))
-    reason = nothing_to_do(version, formula_path)
+    text = render(read_text(template_path), version, artifacts)
+    reason = nothing_to_do(version, text, formula_path)
     if reason:
         print(reason)
         return None
     for rid in FORMULA:
         data = get("%s/download/v%s/%s" % (PRODUCT, fmt(version), KNOWN[rid]), transport)
         verify(artifacts[rid], data)
-    write_text(formula_path, render(read_text(template_path), version, artifacts))
+    write_text(formula_path, text)
     print("rendered %s for %s" % (formula_path, fmt(version)))
     return version
 
@@ -200,13 +210,14 @@ def bump(formula_path, template_path, transport=None):
 def render_local(manifest_path, archives, formula_path, template_path, out_path):
     """The same checks and rendering, from local files."""
     version, artifacts = check_manifest(read_bytes(manifest_path))
-    reason = nothing_to_do(version, formula_path)
+    text = render(read_text(template_path), version, artifacts)
+    reason = nothing_to_do(version, text, formula_path)
     if reason:
         print(reason)
         return None
     for rid in FORMULA:
         verify(artifacts[rid], read_bytes(os.path.join(archives, KNOWN[rid])))
-    write_text(out_path, render(read_text(template_path), version, artifacts))
+    write_text(out_path, text)
     print("rendered %s for %s" % (out_path, fmt(version)))
     return version
 
