@@ -1,11 +1,12 @@
 # Rendered into Formula/jason.rb by .github/scripts/bump_formula.py. Edit this template, never the formula.
-# There is no `version` line: Homebrew reads the version from the /v<version>/ in each url,
-# and brew audit refuses an explicit version it can read there. Each url sits under an
-# `if Hardware::CPU` test inside on_macos or on_linux, because brew style refuses a url
-# directly in on_macos or on_linux.
+# The version must be stated: Homebrew reads a version from the archive's stem first, and
+# from jason-osx-arm64.tar.gz it would read 64. Each url sits under an `if Hardware::CPU`
+# test inside on_macos or on_linux, because brew style refuses a url directly in on_macos or
+# on_linux.
 class Jason < Formula
   desc "Local-first runtime for AI sales development work, driven by your own AI agent"
   homepage "https://jasonharness.ai"
+  version "0.9.0"
   license :cannot_represent
 
   on_macos do
@@ -40,6 +41,6 @@ class Jason < Formula
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/jason --version")
+    assert_match(/\A#{Regexp.escape(version.to_s)}\+/, shell_output("#{bin}/jason --version"))
   end
 end
