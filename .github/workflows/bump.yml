@@ -44,6 +44,12 @@ jobs:
         if: steps.bump.outputs.changed == 'true'
         run: brew tap reply-team/tap "$GITHUB_WORKSPACE"
 
+      # Homebrew 6 loads a formula from a tap that is not official only once it is trusted. This trusts the one
+      # formula the steps below load, never the whole tap.
+      - name: Trust this tap's formula
+        if: steps.bump.outputs.changed == 'true'
+        run: brew trust --formula reply-team/tap/jason
+
       - name: brew style
         if: steps.bump.outputs.changed == 'true'
         run: brew style reply-team/tap
@@ -59,6 +65,13 @@ jobs:
       - name: brew test
         if: steps.bump.outputs.changed == 'true'
         run: brew test reply-team/tap/jason
+
+      # For the record: what is trusted now, and that the short name a person upgrades by resolves.
+      - name: What is trusted, and the short name
+        if: steps.bump.outputs.changed == 'true'
+        run: |
+          brew trust
+          brew info jason
 
       - name: Push the commit
         if: steps.bump.outputs.changed == 'true'

@@ -74,11 +74,15 @@ def parse_version(text):
 
 
 def current_version(formula_path):
-    """The version the formula has now, or None when there is no formula yet."""
+    """The version the formula has now, read from the /v<version>/ of its urls, or None when there is no formula yet.
+    The formula has no `version` line (the template says why), so its urls are where the version is written."""
     if not formula_path or not os.path.isfile(formula_path):
         return None
-    found = re.search(r'^\s*version "(\d+\.\d+\.\d+)"\s*$', read_text(formula_path), re.M)
-    return parse_version(found.group(1)) if found else None
+    urls = r'^\s*url "https://jasonharness\.ai/releases/download/v(\d+\.\d+\.\d+)/'
+    found = set(re.findall(urls, read_text(formula_path), re.M))
+    if len(found) > 1:
+        raise Refused("the formula's urls name more than one version (%s)" % ", ".join(sorted(found)))
+    return parse_version(found.pop()) if found else None
 
 
 def check_manifest(raw):

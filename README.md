@@ -15,11 +15,16 @@ the formula is a convenience there.
 
 ## Updates
 
+Stop the runtime first, then upgrade, then start it again:
+
 ```sh
+jason runtime stop
 brew upgrade jason
+jason runtime start
 ```
 
-Jason reads Homebrew's own install receipt, sees that Homebrew installed it, and leaves updating to Homebrew.
+Jason reads Homebrew's own install receipt, sees that Homebrew installed it, and leaves updating to Homebrew:
+`jason update apply` refuses an installation Homebrew owns.
 
 ## Licence
 
@@ -41,8 +46,9 @@ It does nothing for a release before 0.9.0, or for the version the formula alrea
    changing anything if either differs;
 2. renders `Formula/jason.rb` from `.github/formula/jason.rb.template`;
 3. commits it as `jason <version>`;
-4. runs `brew style`, `brew audit`, `brew install` and `brew test` on it;
-5. pushes that commit only when all four pass.
+4. trusts that one formula (Homebrew 6 asks for it), then runs `brew style`, `brew audit`, `brew install` and
+   `brew test` on it, and prints what is trusted and what `brew info jason` says;
+5. pushes that commit only when every one of those steps passes.
 
 Every request follows at most three redirects. A longer chain stops the run, because it means something changed that
 somebody should look at.

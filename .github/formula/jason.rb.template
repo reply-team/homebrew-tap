@@ -1,20 +1,27 @@
 # Rendered into Formula/jason.rb by .github/scripts/bump_formula.py. Edit this template, never the formula.
+# There is no `version` line: Homebrew reads the version from the /v<version>/ in each url,
+# and brew audit refuses an explicit version it can read there. Each url sits under an
+# `if Hardware::CPU` test inside on_macos or on_linux, because brew style refuses a url
+# directly in on_macos or on_linux.
 class Jason < Formula
   desc "Local-first runtime for AI sales development work, driven by your own AI agent"
   homepage "https://jasonharness.ai"
-  version "{{VERSION}}"
   license :cannot_represent
 
   on_macos do
     depends_on arch: :arm64
-    url "https://jasonharness.ai/releases/download/v{{VERSION}}/jason-osx-arm64.tar.gz"
-    sha256 "{{SHA256_OSX_ARM64}}"
+    if Hardware::CPU.arm?
+      url "https://jasonharness.ai/releases/download/v{{VERSION}}/jason-osx-arm64.tar.gz"
+      sha256 "{{SHA256_OSX_ARM64}}"
+    end
   end
 
   on_linux do
     depends_on arch: :x86_64
-    url "https://jasonharness.ai/releases/download/v{{VERSION}}/jason-linux-x64.tar.gz"
-    sha256 "{{SHA256_LINUX_X64}}"
+    if Hardware::CPU.intel?
+      url "https://jasonharness.ai/releases/download/v{{VERSION}}/jason-linux-x64.tar.gz"
+      sha256 "{{SHA256_LINUX_X64}}"
+    end
   end
 
   def install
@@ -24,8 +31,11 @@ class Jason < Formula
 
   def caveats
     <<~EOS
-      Jason is updated with Homebrew: brew upgrade jason
-      Jason reads Homebrew's install receipt and leaves updating to Homebrew.
+      Jason is updated by Homebrew, with the runtime stopped first:
+        jason runtime stop
+        brew upgrade jason
+        jason runtime start
+      jason update apply refuses an installation Homebrew owns.
     EOS
   end
 
