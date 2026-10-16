@@ -1,0 +1,65 @@
+# Keeps Formula/jason.rb at Jason's latest release. The script reads only https://jasonharness.ai, checks every archive
+# against the release's manifest, and renders the formula; the formula is then committed here, tapped, and checked
+# by brew itself, and the commit is pushed only when brew's style, audit, install and test all pass. A failure
+# anywhere leaves main as it was: the runner is discarded with its commit unpushed.
+name: bump
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bump
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: macos-latest
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_ANALYTICS: "1"
+    steps:
+      - name: Check out the tap
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Read the latest release, check its archives, render the formula
+        id: bump
+        run: python3 .github/scripts/bump_formula.py bump
+
+      - name: Commit the formula locally
+        if: steps.bump.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/jason.rb
+          git commit -m "jason $VERSION"
+
+      - name: Tap this checkout, with that commit
+        if: steps.bump.outputs.changed == 'true'
+        run: brew tap reply-team/tap "$GITHUB_WORKSPACE"
+
+      - name: brew style
+        if: steps.bump.outputs.changed == 'true'
+        run: brew style reply-team/tap
+
+      - name: brew audit
+        if: steps.bump.outputs.changed == 'true'
+        run: brew audit --strict reply-team/tap/jason
+
+      - name: brew install
+        if: steps.bump.outputs.changed == 'true'
+        run: brew install reply-team/tap/jason
+
+      - name: brew test
+        if: steps.bump.outputs.changed == 'true'
+        run: brew test reply-team/tap/jason
+
+      - name: Push the commit
+        if: steps.bump.outputs.changed == 'true'
+        run: git push origin HEAD:main

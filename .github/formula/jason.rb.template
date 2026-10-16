@@ -1,0 +1,35 @@
+# Rendered into Formula/jason.rb by .github/scripts/bump_formula.py. Edit this template, never the formula.
+class Jason < Formula
+  desc "Local-first runtime for AI sales development work, driven by your own AI agent"
+  homepage "https://jasonharness.ai"
+  version "{{VERSION}}"
+  license :cannot_represent
+
+  on_macos do
+    depends_on arch: :arm64
+    url "https://jasonharness.ai/releases/download/v{{VERSION}}/jason-osx-arm64.tar.gz"
+    sha256 "{{SHA256_OSX_ARM64}}"
+  end
+
+  on_linux do
+    depends_on arch: :x86_64
+    url "https://jasonharness.ai/releases/download/v{{VERSION}}/jason-linux-x64.tar.gz"
+    sha256 "{{SHA256_LINUX_X64}}"
+  end
+
+  def install
+    bin.install "jason"
+    prefix.install "LICENSE" => "jason-LICENSE", "THIRD-PARTY-NOTICES" => "jason-THIRD-PARTY-NOTICES"
+  end
+
+  def caveats
+    <<~EOS
+      Jason is updated with Homebrew: brew upgrade jason
+      Jason reads Homebrew's install receipt and leaves updating to Homebrew.
+    EOS
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/jason --version")
+  end
+end

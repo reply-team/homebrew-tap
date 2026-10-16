@@ -1,0 +1,51 @@
+# reply-team/homebrew-tap
+
+The Homebrew tap for Jason, the local-first runtime for AI sales development work that your own AI agent drives.
+Jason 0.9.0 and later are published here.
+
+## Install
+
+```sh
+brew install reply-team/tap/jason
+```
+
+This works on a Mac with Apple silicon, and on Linux on x86-64. On Linux, the install script in Jason's
+[installation guide](https://github.com/reply-team/jason-ai/blob/main/docs/INSTALL.md) remains the documented way;
+the formula is a convenience there.
+
+## Updates
+
+```sh
+brew upgrade jason
+```
+
+Jason reads Homebrew's own install receipt, sees that Homebrew installed it, and leaves updating to Homebrew.
+
+## Licence
+
+Jason itself is distributed under the Jason Runtime Licence,
+<https://github.com/reply-team/jason-ai/blob/main/LICENSE-RUNTIME.md>. The formula installs that licence beside the
+executable as `jason-LICENSE`, and the third-party notices as `jason-THIRD-PARTY-NOTICES`.
+
+The files of this repository (the formula, its template, the workflow and the script) are under the MIT licence, in
+[LICENSE](LICENSE).
+
+## How the formula is kept current
+
+A workflow, `.github/workflows/bump.yml`, runs every six hours and can also be started by hand. It reads the manifest
+of Jason's latest release from `https://jasonharness.ai`.
+
+It does nothing for a release before 0.9.0, or for the version the formula already has. For a new release, it:
+
+1. downloads each archive the formula installs, checks its SHA-256 and size against the manifest, and stops without
+   changing anything if either differs;
+2. renders `Formula/jason.rb` from `.github/formula/jason.rb.template`;
+3. commits it as `jason <version>`;
+4. runs `brew style`, `brew audit`, `brew install` and `brew test` on it;
+5. pushes that commit only when all four pass.
+
+Every request follows at most three redirects. A longer chain stops the run, because it means something changed that
+somebody should look at.
+
+A platform that Jason's releases add later reaches the formula through a reviewed change to the template, never
+through the workflow, which refuses a manifest naming a platform it does not know.
