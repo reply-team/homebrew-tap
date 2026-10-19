@@ -6,22 +6,22 @@
 class Jason < Formula
   desc "Local-first runtime for AI sales development work, driven by your own AI agent"
   homepage "https://jasonharness.ai"
-  version "0.11.0"
+  version "0.12.0"
   license :cannot_represent
 
   on_macos do
     depends_on arch: :arm64
     if Hardware::CPU.arm?
-      url "https://jasonharness.ai/releases/download/v0.11.0/jason-osx-arm64.tar.gz"
-      sha256 "591031dc79e9e67fe4c4d80d6ef051497df6a31bf2622752a8fc8670a7560b27"
+      url "https://jasonharness.ai/releases/download/v0.12.0/jason-osx-arm64.tar.gz"
+      sha256 "5d709585b77c7df3ef43dd226be4fbcd49390c2eec6bf746780f144d718d8cb7"
     end
   end
 
   on_linux do
     depends_on arch: :x86_64
     if Hardware::CPU.intel?
-      url "https://jasonharness.ai/releases/download/v0.11.0/jason-linux-x64.tar.gz"
-      sha256 "54544c38bb8edc467f8e37d9be78820bd6ee65b908062d83a422990f10bdacf0"
+      url "https://jasonharness.ai/releases/download/v0.12.0/jason-linux-x64.tar.gz"
+      sha256 "4a26d273e56955e43b4deb8cd70223dd55c52ba506f7eb507c7236ee968c964c"
     end
   end
 
