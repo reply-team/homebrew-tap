@@ -12,7 +12,7 @@ class Jason < Formula
   on_macos do
     depends_on arch: :arm64
     if Hardware::CPU.arm?
-      url "https://jasonharness.ai/releases/download/v{{VERSION}}/jason-osx-arm64.tar.gz"
+      url "https://get.jasonharness.ai/releases/download/v{{VERSION}}/jason-osx-arm64.tar.gz"
       sha256 "{{SHA256_OSX_ARM64}}"
     end
   end
@@ -20,7 +20,7 @@ class Jason < Formula
   on_linux do
     depends_on arch: :x86_64
     if Hardware::CPU.intel?
-      url "https://jasonharness.ai/releases/download/v{{VERSION}}/jason-linux-x64.tar.gz"
+      url "https://get.jasonharness.ai/releases/download/v{{VERSION}}/jason-linux-x64.tar.gz"
       sha256 "{{SHA256_LINUX_X64}}"
     end
   end

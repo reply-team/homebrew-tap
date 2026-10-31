@@ -38,7 +38,7 @@ The files of this repository (the formula, its template, the workflow and the sc
 ## How the formula is kept current
 
 A workflow, `.github/workflows/bump.yml`, runs every six hours and can also be started by hand. It reads the manifest
-of Jason's latest release from `https://jasonharness.ai`.
+of Jason's latest release from `https://get.jasonharness.ai`.
 
 It does nothing for a release before 0.9.0, or when `Formula/jason.rb` already is the template rendered for the
 latest release. Otherwise (a new release, or a template corrected since) it:

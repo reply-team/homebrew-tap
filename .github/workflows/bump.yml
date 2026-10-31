@@ -1,4 +1,4 @@
-# Keeps Formula/jason.rb at Jason's latest release. The script reads only https://jasonharness.ai, checks every archive
+# Keeps Formula/jason.rb at Jason's latest release. The script reads only https://get.jasonharness.ai, checks every archive
 # against the release's manifest, and renders the formula; the formula is then committed here, tapped, and checked
 # by brew itself, and the commit is pushed only when brew's style, audit, install and test all pass. A failure
 # anywhere leaves main as it was: the runner is discarded with its commit unpushed.

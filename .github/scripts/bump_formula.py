@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Keeps Formula/jason.rb at Jason's latest release, from that release's own manifest.
 
-  bump    Reads https://jasonharness.ai/releases/latest/download/manifest.json, downloads the archives the formula
-          installs from https://jasonharness.ai/releases/download/v<version>/, checks each one's SHA-256 and size
+  bump    Reads https://get.jasonharness.ai/releases/latest/download/manifest.json, downloads the archives the formula
+          installs from https://get.jasonharness.ai/releases/download/v<version>/, checks each one's SHA-256 and size
           against the manifest, and renders Formula/jason.rb from .github/formula/jason.rb.template. The address is
           fixed here, and no option changes it.
   render  The same checks and rendering, from local files: --manifest, --archives (a folder holding the archives
@@ -26,7 +26,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-PRODUCT = "https://jasonharness.ai/releases"
+PRODUCT = "https://get.jasonharness.ai/releases"
 MAX_REDIRECTS = 3
 FLOOR = (0, 9, 0)
 # Every platform a release's manifest may name, with its archive. Homebrew does not run on Windows: its archive is
@@ -82,7 +82,7 @@ def current_version(formula_path):
         return None
     text = read_text(formula_path)
     stated = re.search(r'^\s*version "(\d+\.\d+\.\d+)"\s*$', text, re.M)
-    urls = r'^\s*url "https://jasonharness\.ai/releases/download/v(\d+\.\d+\.\d+)/'
+    urls = r'^\s*url "https://get\.jasonharness\.ai/releases/download/v(\d+\.\d+\.\d+)/'
     found = set(re.findall(urls, text, re.M))
     if len(found) > 1:
         raise Refused("the formula's urls name more than one version (%s)" % ", ".join(sorted(found)))
