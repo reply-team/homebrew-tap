@@ -8,6 +8,8 @@ class Jason < Formula
   homepage "https://jasonharness.ai"
   version "0.48.7"
   license :cannot_represent
+  deprecate! date:    "2026-11-21",
+             because: "is replaced by Jason's own installer since 0.49 (https://jasonharness.ai) and stays at 0.48.7"
 
   on_macos do
     depends_on arch: :arm64
@@ -32,11 +34,12 @@ class Jason < Formula
 
   def caveats
     <<~EOS
-      Jason is updated by Homebrew, with the runtime stopped first:
+      Jason 0.49 and later are not installed by Homebrew: this formula stays at 0.48.7.
+      To move to the current Jason, which is Jason Desktop with the jason command in your terminal:
         jason runtime stop
-        brew upgrade jason
-        jason runtime start
-      jason update apply refuses an installation Homebrew owns.
+        brew uninstall jason
+        curl -fsSL https://get.jasonharness.ai/releases/latest/download/install.sh | sh
+      Your data in ~/.jason and your work in ~/Jason stay where they are.
     EOS
   end
 
