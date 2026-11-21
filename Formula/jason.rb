@@ -1,4 +1,4 @@
-# Rendered into Formula/jason.rb by .github/scripts/bump_formula.py. Edit this template, never the formula.
+# Kept by hand since the formula stopped at 0.48.7: no script renders it any more.
 # The version must be stated: Homebrew reads a version from the archive's stem first, and
 # from jason-osx-arm64.tar.gz it would read 64. Each url sits under an `if Hardware::CPU`
 # test inside on_macos or on_linux, because brew style refuses a url directly in on_macos or
@@ -7,7 +7,7 @@ class Jason < Formula
   desc "Local-first runtime for AI sales development work, driven by your own AI agent"
   homepage "https://jasonharness.ai"
   version "0.48.7"
-  license :cannot_represent
+  license "MIT"
   deprecate! date:    "2026-11-21",
              because: "is replaced by Jason's own installer since 0.49 (https://jasonharness.ai) and stays at 0.48.7"
 
@@ -33,14 +33,25 @@ class Jason < Formula
   end
 
   def caveats
-    <<~EOS
-      Jason 0.49 and later are not installed by Homebrew: this formula stays at 0.48.7.
-      To move to the current Jason, which is Jason Desktop with the jason command in your terminal:
-        jason runtime stop
-        brew uninstall jason
-        curl -fsSL https://get.jasonharness.ai/releases/latest/download/install.sh | sh
-      Your data in ~/.jason and your work in ~/Jason stay where they are.
-    EOS
+    if OS.mac?
+      <<~EOS
+        This formula stays at 0.48.7. On a Mac Jason is now a Homebrew cask, Jason Desktop with
+        the jason command in your terminal:
+          jason runtime stop
+          brew uninstall --formula jason
+          brew install --cask reply-team/tap/jason
+        Your data in ~/.jason and your work in ~/Jason stay where they are.
+      EOS
+    else
+      <<~EOS
+        Jason 0.49 and later are not installed by Homebrew: this formula stays at 0.48.7.
+        To move to the current Jason, which is Jason Desktop with the jason command in your terminal:
+          jason runtime stop
+          brew uninstall --formula jason
+          curl -fsSL https://get.jasonharness.ai/releases/latest/download/install.sh | sh
+        Your data in ~/.jason and your work in ~/Jason stay where they are.
+      EOS
+    end
   end
 
   test do
