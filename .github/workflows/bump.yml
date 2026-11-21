@@ -1,7 +1,9 @@
-# Keeps Formula/jason.rb at Jason's latest release. The script reads only https://get.jasonharness.ai, checks every archive
-# against the release's manifest, and renders the formula; the formula is then committed here, tapped, and checked
-# by brew itself, and the commit is pushed only when brew's style, audit, install and test all pass. A failure
-# anywhere leaves main as it was: the runner is discarded with its commit unpushed.
+# Keeps Casks/jason.rb at Jason's latest release. The script reads the release from https://get.jasonharness.ai, holds the
+# application's zip to the release's checksums.txt, reads the cask's template from Jason's repository at the release's
+# tag, and renders the cask; the cask is then committed here, tapped, and checked by brew itself, and the commit is
+# pushed only when brew's style, audit and install pass and the jason it links answers the release's version. A failure
+# anywhere leaves main as it was: the runner is discarded with its commit unpushed. The formula stays at 0.48.7 and is
+# no longer bumped.
 name: bump
 
 on:
@@ -26,64 +28,70 @@ jobs:
       - name: Check out the tap
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - name: Read the latest release, check its archives, render the formula
+      - name: Read the latest release, check its zip, render the cask
         id: bump
-        run: python3 .github/scripts/bump_formula.py bump
+        run: python3 .github/scripts/bump_cask.py bump
 
-      - name: Commit the formula locally
+      - name: Commit the cask locally
         if: steps.bump.outputs.changed == 'true'
         env:
           VERSION: ${{ steps.bump.outputs.version }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Formula/jason.rb
+          git add Casks/jason.rb
           git commit -m "jason $VERSION"
 
       - name: Tap this checkout, with that commit
         if: steps.bump.outputs.changed == 'true'
         run: brew tap reply-team/tap "$GITHUB_WORKSPACE"
 
-      # Homebrew 6 loads a formula from a tap that is not official only once it is trusted. This trusts the one
-      # formula the steps below load, never the whole tap.
-      - name: Trust this tap's formula
+      # Homebrew loads a cask from a tap that is not official only once it is trusted. This trusts the one cask the
+      # steps below load, never the whole tap.
+      - name: Trust this tap's cask
         if: steps.bump.outputs.changed == 'true'
-        run: brew trust --formula reply-team/tap/jason
+        run: brew trust --cask reply-team/tap/jason
 
+      # Each brew step fails where Homebrew says a tap is not trusted or that it ignores what a tap holds, so a step that
+      # read nothing of the cask never passes for one that read it; style reads the cask's one file.
       - name: brew style
         if: steps.bump.outputs.changed == 'true'
-        run: brew style reply-team/tap
+        run: |
+          brew style "$(brew --repository reply-team/tap)/Casks/jason.rb" 2>&1 | tee style.txt
+          grep -qE '(^|[^0-9])1 file inspected' style.txt || { echo "FAIL: brew style did not inspect the cask's one file"; exit 1; }
+          ! grep -qiE 'not trusted|ignoring (formulae|casks)|tap trust is required' style.txt || { echo "FAIL: brew style says a tap is not trusted or ignored"; exit 1; }
 
       - name: brew audit
         if: steps.bump.outputs.changed == 'true'
-        run: brew audit --strict reply-team/tap/jason
+        run: |
+          brew audit --strict --cask reply-team/tap/jason 2>&1 | tee audit.txt
+          ! grep -qiE 'not trusted|ignoring (formulae|casks)|tap trust is required' audit.txt || { echo "FAIL: brew audit says a tap is not trusted or ignored"; exit 1; }
 
       - name: brew install
         if: steps.bump.outputs.changed == 'true'
-        run: brew install reply-team/tap/jason
+        run: |
+          brew install --cask reply-team/tap/jason 2>&1 | tee install.txt
+          ! grep -qiE 'not trusted|ignoring (formulae|casks)|tap trust is required' install.txt || { echo "FAIL: brew install says a tap is not trusted or ignored"; exit 1; }
 
-      - name: brew test
-        if: steps.bump.outputs.changed == 'true'
-        run: brew test reply-team/tap/jason
-
-      # The last check: the short name a person upgrades by must resolve to this tap's formula, and Homebrew must
-      # hold the release's version for it (from the archive's name alone it would read 64). Both are printed, and
-      # either mismatch fails the job, so nothing is pushed.
-      - name: Check the short name and the version
+      # The last checks: the jason the cask links answers the release's version, and the short name a person installs by
+      # resolves to this tap's cask at that version. Each is printed, and any mismatch fails the job, so nothing is pushed.
+      - name: Check the link, the short name and the version
         if: steps.bump.outputs.changed == 'true'
         env:
           VERSION: ${{ steps.bump.outputs.version }}
         run: |
-          brew trust
-          brew info jason
-          brew info --json=v2 jason | python3 -c '
+          answered="$("$(brew --prefix)/bin/jason" --version)"
+          echo "$(brew --prefix)/bin/jason --version: $answered"
+          case "$answered" in "$VERSION"*) ;; *) echo "FAIL: the cask's jason answers $answered, not $VERSION"; exit 1 ;; esac
+          brew info --cask reply-team/tap/jason
+          brew info --json=v2 --cask reply-team/tap/jason | python3 -c '
           import json, os, sys
-          formula = json.load(sys.stdin)["formulae"][0]
-          name, stable = formula["full_name"], formula["versions"]["stable"]
-          print("full_name: %s" % name)
-          print("versions.stable: %s" % stable)
-          if name != "reply-team/tap/jason" or stable != os.environ["VERSION"]:
-              sys.exit("FAIL: the short name must be reply-team/tap/jason at %s" % os.environ["VERSION"])
+          cask = json.load(sys.stdin)["casks"][0]
+          token, version = cask["full_token"], cask["version"]
+          print("full_token: %s" % token)
+          print("version: %s" % version)
+          if token != "reply-team/tap/jason" or version != os.environ["VERSION"]:
+              sys.exit("FAIL: the cask must be reply-team/tap/jason at %s" % os.environ["VERSION"])
           '
 
       - name: Push the commit
