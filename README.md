@@ -1,7 +1,19 @@
 # reply-team/homebrew-tap
 
 The Homebrew tap for Jason, the local-first runtime for AI sales development work that your own AI agent drives.
-Jason 0.9.0 and later are published here.
+Jason 0.9.0 to 0.48.7 were published here.
+
+**From 0.49 on, Jason is not installed by Homebrew.** Jason is now one installation, Jason Desktop with the `jason`
+command in your terminal, installed by the one line at <https://jasonharness.ai>. This formula stays at 0.48.7 for those
+who already have it, and Homebrew shows it as deprecated. To move on:
+
+```sh
+jason runtime stop
+brew uninstall jason
+curl -fsSL https://get.jasonharness.ai/releases/latest/download/install.sh | sh
+```
+
+Your data in `~/.jason` and your work in `~/Jason` stay where they are. What follows describes the formula as it was.
 
 ## Install
 
