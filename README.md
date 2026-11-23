@@ -31,9 +31,9 @@ data in `~/.jason` and your work in `~/Jason` stay in both.
 
 ## The older formula
 
-Jason 0.9.0 to 0.48.7 were published here as a formula, the command line alone. It stays at 0.48.7 for those who already
-have it, and Homebrew shows it as deprecated. While it is linked, Homebrew does not link the cask's `jason`, so take it off
-first:
+Jason 0.9.0 to 0.48.7 were published here as a formula, the command line alone. The formula is no longer in this tap;
+where it is still installed it stays at 0.48.7. While it is linked, Homebrew does not link the cask's `jason`, so take it
+off first:
 
 ```sh
 jason runtime stop
@@ -47,7 +47,7 @@ On Linux, the last line is the install script instead:
 
 ## Licence
 
-Jason itself, and the files of this repository (the cask, the formula, the workflow and the script), are under the MIT
+Jason itself, and the files of this repository (the cask, the workflow and the script), are under the MIT
 licence: Jason's in <https://github.com/reply-team/jason-ai/blob/main/LICENSE>, this repository's in [LICENSE](LICENSE).
 
 ## How the cask is kept current

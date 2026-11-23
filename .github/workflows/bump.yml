@@ -2,8 +2,7 @@
 # application's zip to the release's checksums.txt, reads the cask's template from Jason's repository at the release's
 # tag, and renders the cask; the cask is then committed here, tapped, and checked by brew itself, and the commit is
 # pushed only when brew's style, audit and install pass and the jason it links answers the release's version. A failure
-# anywhere leaves main as it was: the runner is discarded with its commit unpushed. The formula stays at 0.48.7 and is
-# no longer bumped.
+# anywhere leaves main as it was: the runner is discarded with its commit unpushed.
 name: bump
 
 on:
