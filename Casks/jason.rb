@@ -1,6 +1,6 @@
 cask "jason" do
-  version "0.51.0"
-  sha256 "4f8ffe5442d8397ac073b96f10206b2f3a4a5fd94e6df34207f772fa8d40cb48"
+  version "0.51.1"
+  sha256 "bb542ff73885483662f7b89feac85c0fe284c2d27d178a7a3017680255f2130c"
 
   url "https://get.jasonharness.ai/releases/download/v#{version}/jason-desktop-macos-arm64.zip"
   name "Jason"
